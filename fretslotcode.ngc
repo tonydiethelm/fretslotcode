@@ -1,0 +1,133 @@
+(Manual cut of standard Chickiboom neck fret slots. Written by Tony Diethelm. Revisions managed with Git.)
+
+(We are using the rule of 17.817)
+(Divide scale length by 17.817. That's your first fret position.)
+(Just keep doing it again and again. :D)
+(We will have to manage our X position, as we are cutting on a pre done neck.)
+
+
+(divide scale length by 17.817)
+(subtract from scale length)
+(cut there, new scale length)
+(redo!)
+(Oh, but skip certain frets)
+
+
+
+(set everything up.)
+
+G017	(XY plane)
+G21  	(metric)
+G90	(absolute programming)
+F1000	(feed rate 1000mm/min)
+S1	(spindle speed 1rev/min. We don't use spindle speeds, but needed for router to turn on.)
+G00 Z35 (safe Z)
+
+
+
+
+(use #1-#33 as local variables)
+
+#1 = [24.25]	(desired scale length in inches)
+#2 = [#1*25.4]	(multiply by 25.4 to convert to mm.)
+#3 = 		(position of the center of the nut.)
+
+
+
+
+(Set up the subroutine for slot cutting)
+
+o<SLOTCUTS> SUB
+G00 Z#5			(bit up)
+G00 X#4 Y#2 Z#5		(safely drive to beginning)
+M3 G01 Z#6		(router on, bit down)
+
+(set up a WHILE loop to do gross cuts.)
+(WHILE starting/current X is less than target-#1-1, go to #4, go across, come back, increment #4 by #8.)
+
+#11 = 0
+o101 WHILE [#4 LT [#10-#1-#7]] 
+	G01 X#4		(go to current/starting X)
+	o102 IF #11 EQ 0
+		G01 Y#3		(go across)
+		#11 = 1		(We are now high, next rep needs to come back)
+	o102 ELSE
+		G01 Y#2		(come back)
+		#11 = 0		(We are now low, next rep needs to go across)
+	o102 ENDIF
+	#4 = [#4+#8]	(increment the X position)
+o101 ENDWHILE 
+
+G00 Y#2		(come back, fast. Needed to reset Y so the rest of this works with minimal logic.)
+#4 = [#9+#1]	(final cut, lower end, set X)
+G00 X#4		(go to lower end)
+G01 Y#3		(go across)
+#4 = [#10-#1]	(final cut, high end, set X)
+G00 X#4		(go to high end)
+G01 Y#2		(come back)
+
+G00 Z#5	M5	(bit up, stop router)
+o<SLOTCUTS> ENDSUB
+
+
+
+
+
+(back brace cut. 0 to 60, 5mm deep)
+(set up variables)
+#6 = [24.5-5.0]		(cutting Z height)
+#9 = [0.0]		(set lower boundary)
+#10 = [60.0]		(set upper boundary)
+#4 = [#9+#1+#7]		(set starting X, 2mm up from the end. Go back do clean cuts)
+
+(call subroutine)
+o<SLOTCUTS> call [#1][#2][#3][#4][#5][#6][#7][#8][#9][#10]
+
+
+
+(bridge slot.  80 to 91.1, 7mm deep)
+(set up variables)
+#6 = [24.5-7.0]		(cutting Z height)
+#9 = [80.0]		(set lower boundary)
+#10 = [91.1]		(set upper boundary)
+#4 = [#9+#1+#7]		(set starting X, 2mm up from the end. Go back do clean cuts)
+(call subroutine)
+o<SLOTCUTS> call [#1][#2][#3][#4][#5][#6][#7][#8][#9][#10]
+
+
+
+(box cut. 101.1 to 121.1, 7mm deep)
+(set up variables)
+#6 = [24.5-7.0]		(cutting Z height)
+#9 = [101.1]		(set lower boundary)
+#10 = [121.1]		(set upper boundary)
+#4 = [#9+#1+#7]		(set starting X, 2mm up from the end. Go back do clean cuts)
+(call subroutine)
+o<SLOTCUTS> call [#1][#2][#3][#4][#5][#6][#7][#8][#9][#10]
+
+
+(nut slot   695.95 to 707.05, 7mm deep)
+(set up variables)
+#6 = [24.5-7.0]		(cutting Z height)
+#9 = [695.95]		(set lower boundary)
+#10 = [707.05]		(set upper boundary)
+#4 = [#9+#1+#7]		(set starting X, 2mm up from the end. Go back do clean cuts)
+(call subroutine)
+o<SLOTCUTS> call [#1][#2][#3][#4][#5][#6][#7][#8][#9][#10]
+
+
+
+(headstock   732.05 to 832.05, 14.4mm deep down to 11mm target)
+(set up variables)
+#6 = [24.5-14.4]		(cutting Z height)
+#9 = [732.05]		(set lower boundary)
+#10 = [832.05]		(set upper boundary)
+#4 = [#9+#1+#7]		(set starting X, 2mm up from the end. Go back do clean cuts)
+(call subroutine)
+o<SLOTCUTS> call [#1][#2][#3][#4][#5][#6][#7][#8][#9][#10]
+
+
+M5		(stop spindle)
+
+M2		(end program)
+
